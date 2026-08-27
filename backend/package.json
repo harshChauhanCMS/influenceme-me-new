@@ -1,0 +1,63 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "Express.js TypeScript Backend for InfluenceMe",
+  "main": "dist/server.js",
+  "scripts": {
+    "dev": "nodemon -r tsconfig-paths/register server.ts",
+    "start": "node dist/backend/server.js",
+    "build": "tsc && tsc-alias",
+    "seed:vendors": "ts-node -r tsconfig-paths/register scripts/seedVendors.ts",
+    "fix:schema": "ts-node -r tsconfig-paths/register scripts/fixVendorRequirementSchema.ts",
+    "seed:cms": "ts-node -r tsconfig-paths/register scripts/seedCMSPages.ts",
+    "seed:admin": "ts-node -r tsconfig-paths/register scripts/seedAdmin.ts"
+  },
+  "keywords": [
+    "express",
+    "typescript",
+    "mongodb",
+    "api"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/pdfkit": "^0.17.3",
+    "axios": "^1.12.2",
+    "bcrypt": "^6.0.0",
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "datauri": "^4.1.0",
+    "dotenv": "^17.2.2",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.1.0",
+    "firebase-admin": "^13.5.0",
+    "form-data": "^4.0.4",
+    "joi": "^18.0.1",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.18.1",
+    "multer": "^2.0.2",
+    "node-fetch": "^3.3.2",
+    "nodemailer": "^7.0.13",
+    "pdfkit": "^0.17.2",
+    "razorpay": "^2.9.6",
+    "socket.io": "^4.8.1",
+    "uuid": "^13.0.0"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "@types/joi": "^17.2.2",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/multer": "^2.0.0",
+    "@types/node": "^24.5.2",
+    "@types/nodemailer": "^7.0.9",
+    "@types/uuid": "^10.0.0",
+    "nodemon": "^3.1.10",
+    "ts-node": "^10.9.2",
+    "tsc-alias": "^1.8.16",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.9.2"
+  }
+}
