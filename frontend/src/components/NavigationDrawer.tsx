@@ -102,30 +102,11 @@ export const NavigationDrawer: FC<NavigationDrawerProps> = ({
                 borderColor: 'divider',
             }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    <Avatar 
-                        sx={{ 
-                            width: 40, 
-                            height: 40, 
-                            bgcolor: '#8CC342',
-                            fontWeight: 'bold',
-                            fontSize: '1.2rem',
-                        }}
-                    >
-                        IM
-                    </Avatar>
-                    <Typography 
-                        variant="h6" 
-                        sx={{ 
-                            fontWeight: 700,
-                            background: 'linear-gradient(135deg, #8CC342 0%, #7CB342 100%)',
-                            backgroundClip: 'text',
-                            WebkitBackgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent',
-                            letterSpacing: '-0.5px',
-                        }}
-                    >
-                        InfluenceMe
-                    </Typography>
+                    <img 
+                        src="/logonew.png" 
+                        alt="InfluenceMe Logo" 
+                        style={{ height: 36, width: 'auto', objectFit: 'contain' }} 
+                    />
                 </Box>
                 {!isDesktop && (
                     <IconButton
@@ -306,7 +287,7 @@ export const NavigationDrawer: FC<NavigationDrawerProps> = ({
                         fontSize: '0.7rem',
                     }}
                 >
-                    © 2024 InfluenceMe
+                    © 2024 Infusee
                 </Typography>
                 <Typography 
                     variant="caption" 

@@ -34,7 +34,7 @@ const PolicyPage: FC = () => {
                         {/* Introduction */}
                         <section className="mt-8">
                             <p className="text-gray-700 leading-relaxed">
-                                Thank you for using <strong>InfluenceMe</strong> (also known as <strong>Influence-Me</strong>). Your privacy is very important to us. Our users are at the center of everything we do, and we are committed to providing you with a secure and personalized experience.
+                                Thank you for using <strong>Infusee</strong>. Your privacy is very important to us. Our users are at the center of everything we do, and we are committed to providing you with a secure and personalized experience.
                             </p>
                             <p className="mt-4 text-gray-700 leading-relaxed">
                                 This Privacy Policy explains what information we collect, why we collect it, how we use it, and the choices you have. It applies to our website and our mobile application.
@@ -43,7 +43,7 @@ const PolicyPage: FC = () => {
                             <div className="mt-6 rounded-xl border border-gray-200 bg-gray-50 p-5">
                                 <h2 className="text-lg font-semibold text-gray-900">Who We Are</h2>
                                 <p className="mt-2 text-gray-700">
-                                    <strong>App/Service:</strong> InfluenceMe (Influence-Me) — influencer marketing platform.
+                                    <strong>App/Service:</strong> Infusee — influencer marketing platform.
                                 </p>
                                 <p className="mt-2 text-gray-700">
                                     <strong>Business/Owner:</strong> NISA MEDIA LLP.
@@ -86,7 +86,7 @@ const PolicyPage: FC = () => {
                             <div className="mt-8">
                                 <h3 className="text-xl font-semibold text-gray-900">Meta Platform Data (Instagram and Facebook)</h3>
                                 <p className="mt-4 text-gray-700">
-                                    When you connect your Instagram or Facebook account to Influence-Me, we collect and process Platform Data from Meta (Facebook, Inc.) in accordance with Meta&apos;s Platform Terms. This data is collected only with your explicit consent and authorization through Meta&apos;s OAuth flow.
+                                    When you connect your Instagram or Facebook account to Infusee, we collect and process Platform Data from Meta (Facebook, Inc.) in accordance with Meta&apos;s Platform Terms. This data is collected only with your explicit consent and authorization through Meta&apos;s OAuth flow.
                                 </p>
                                 
                                 <h4 className="text-lg font-semibold text-gray-900 mt-6">Types of Meta Platform Data We Collect:</h4>
@@ -233,7 +233,7 @@ const PolicyPage: FC = () => {
                         <section className="mt-12">
                             <h2 className="text-2xl font-bold text-gray-900 border-b pb-2">Cookies and Tracking Technologies</h2>
                             <p className="mt-4 text-gray-700">
-                                Influence-Me uses cookies, web beacons, and similar tools to enhance user experience and gather analytics. These tools help us:
+                                Infusee uses cookies, web beacons, and similar tools to enhance user experience and gather analytics. These tools help us:
                             </p>
                             <ul className="mt-4 list-disc pl-5 text-gray-700 space-y-2 marker:text-indigo-500">
                                 <li>Track visits and interactions</li>
@@ -266,7 +266,7 @@ const PolicyPage: FC = () => {
                         <section className="mt-12">
                             <h2 className="text-2xl font-bold text-gray-900 border-b pb-2">Children’s Privacy</h2>
                             <p className="mt-4 text-gray-700">
-                                Influence-Me does not knowingly collect personal data from children under 13. If such information is inadvertently collected, it will be promptly deleted.
+                                Infusee does not knowingly collect personal data from children under 13. If such information is inadvertently collected, it will be promptly deleted.
                             </p>
                         </section>
 

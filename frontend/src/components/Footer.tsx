@@ -51,12 +51,12 @@ const Footer: React.FC = () => {
                     <div className="mb-4">
                         <Link href="/" aria-label="Home">
                             <Image
-                                src="/logo2.png" // Assumes logo is in the /public directory
-                                alt="Influence-Me Logo"
-                                width={150} // Explicit width is required for Next.js Image
-                                height={120} // Explicit height is required for Next.js Image
-                                style={{ objectFit: 'contain' }} // Use style for object-fit
-                                priority // Preload the logo image as it's likely important
+                                src="/logonew.png"
+                                alt="InfluenceMe Logo"
+                                width={150}
+                                height={120}
+                                style={{ objectFit: 'contain' }}
+                                priority
                             />
                         </Link>
                     </div>
@@ -96,7 +96,7 @@ const Footer: React.FC = () => {
 
                 {/* Divider and Copyright */}
                 <div className="border-t border-white/40 pt-8 mt-8 text-center text-sm">
-                    <p>&copy; {currentYear} INFLUENCE-ME - Redefining The Art Of Influencing</p>
+                    <p>&copy; {currentYear} INFUSEE - Redefining The Art Of Influencing</p>
                 </div>
             </div>
         </footer>

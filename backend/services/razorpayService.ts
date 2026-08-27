@@ -31,10 +31,13 @@ class RazorpayService {
   async initialize(): Promise<void> {
     try {
       const settings = await Settings.getSettings();
-      const { razorpayKeyId, razorpayKeySecret } = settings.paymentSettings;
+      // DB-stored admin settings take priority; fall back to .env so the
+      // gateway works out of the box before an admin visits the settings panel.
+      const razorpayKeyId = settings.paymentSettings.razorpayKeyId || process.env.RAZORPAY_KEY_ID || "";
+      const razorpayKeySecret = settings.paymentSettings.razorpayKeySecret || process.env.RAZORPAY_KEY_SECRET || "";
 
       if (!razorpayKeyId || !razorpayKeySecret) {
-        throw new Error("Razorpay keys not configured. Please configure in admin settings.");
+        throw new Error("Razorpay keys not configured. Set RAZORPAY_KEY_ID/RAZORPAY_KEY_SECRET in .env or configure in admin settings.");
       }
 
       this.config = {

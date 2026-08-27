@@ -25,6 +25,7 @@ import instagramWebhookRoutes from "./routes/instagramWebhookRoutes";
 import influencerBidRoutes from "./routes/influencerBidRoutes";
 import chatRoutes from "./routes/chatRoutes";
 import paymentRoutes from "./routes/paymentRoutes";
+import payoutMilestoneRoutes from "./routes/payoutMilestoneRoutes";
 import invoiceRoutes from "./routes/invoiceRoutes";
 import paymentWebhookRoutes from "./routes/paymentWebhookRoutes";
 import versionRoutes from "./routes/versionRoutes";
@@ -104,7 +105,15 @@ app.use(
 );
 
 // Body parsers for JSON and URL-encoded data
-app.use(express.json());
+// `verify` stashes the raw bytes on req.rawBody so webhook handlers (Razorpay)
+// can validate the HMAC signature against the exact payload received.
+app.use(
+  express.json({
+    verify: (req: any, _res, buf) => {
+      req.rawBody = buf;
+    },
+  }),
+);
 app.use(express.urlencoded({ extended: true }));
 
 // --- Static File Serving ---
@@ -135,6 +144,7 @@ app.use("/api/vendor-brand-deal", vendorBrandDealRoutes);
 app.use("/api/vendor-bid", vendorBidRoutes);
 app.use("/api/influencer-bid", influencerBidRoutes);
 app.use("/api/chat", chatRoutes);
+app.use("/api/payment/milestones", payoutMilestoneRoutes);
 app.use("/api/payment", paymentRoutes);
 app.use("/api/invoice", invoiceRoutes);
 app.use("/api/version", versionRoutes);

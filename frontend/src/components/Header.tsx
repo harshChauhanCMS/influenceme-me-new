@@ -118,7 +118,7 @@ const Header: React.FC = () => {
     `;
 
         const desktopClasses = `
-      relative px-6 py-3 text-lg font-bold rounded-xl group
+      relative px-5 py-2.5 text-base font-bold rounded-xl group
       ${isActive
             ? "text-purple-700 bg-purple-100/80 shadow-sm"
             : "text-gray-700 hover:text-purple-700 hover:bg-gray-50/80 hover:shadow-sm"
@@ -151,7 +151,7 @@ const Header: React.FC = () => {
         relative inline-flex items-center justify-center overflow-hidden font-semibold 
         text-purple-600 border-2 border-purple-500 rounded-full shadow-lg group
         hover:scale-105 hover:shadow-xl ${TRANSITION_CLASSES}
-        ${isMobile ? "w-full px-6 py-3 text-lg" : "px-8 py-2.5 text-base"}
+        ${isMobile ? "w-full px-6 py-3 text-lg" : "px-7 py-2.5 text-base"}
       `}
         >
       <span className="absolute inset-0 flex items-center justify-center w-full h-full text-white
@@ -173,10 +173,10 @@ const Header: React.FC = () => {
 
     return (
         <header className={headerClasses}>
-            <div className="flex items-center justify-between max-w-7xl mx-auto py-5 px-4 sm:px-6">
+            <div className="flex items-center justify-between max-w-7xl mx-auto py-3 sm:py-3.5 px-4 sm:px-6">
                 {/* Logo */}
                 <Link href="/" aria-label="Home page">
-                    <img src="/logo.webp" alt="Company Logo" className="h-15 w-60 px-4 object-contain" loading="lazy" />
+                    <img src="/logonew.png" alt="Infusee Logo" className="h-14 sm:h-16 md:h-18 w-auto max-w-[240px] sm:max-w-[280px] px-1 object-contain transition-all" loading="lazy" />
                 </Link>
 
                 {/* Desktop Navigation */}

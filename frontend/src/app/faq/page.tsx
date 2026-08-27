@@ -39,8 +39,8 @@ const FaqPage: FC = () => {
     const faqData: FaqItem[] = [
         {
             id: 1,
-            question: "What is influence-me and how does it work?",
-            answer: "Influence-Me is a platform that connects influencers, brands, and service providers for seamless collaboration. Influencers can find campaigns, brands can discover creators, and vendors can offer services—all in one place."
+            question: "What is Infusee and how does it work?",
+            answer: "Infusee is a platform that connects influencers, brands, and service providers for seamless collaboration. Influencers can find campaigns, brands can discover creators, and vendors can offer services—all in one place."
         },
         {
             id: 2,
@@ -65,7 +65,7 @@ const FaqPage: FC = () => {
         {
             id: 6,
             question: "Can I use both the website and the app?",
-            answer: "Yes! Influence-Me is available as both a responsive website and a mobile app so you can manage your collaborations on the go."
+            answer: "Yes! Infusee is available as both a responsive website and a mobile app so you can manage your collaborations on the go."
         },
         {
             id: 7,

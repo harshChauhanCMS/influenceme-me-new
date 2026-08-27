@@ -19,8 +19,8 @@ export function buildServiceWhatsAppMessage(service: {
   if (service.images && service.images.length > 0) {
     text += `Images: ${service.images.slice(0, 3).join(' ')}\n`;
   }
-  text += `\n_Shared via Influence-Me.in_\n`;
-  text += `Influence-Me.in app: ${APP_STORE_LINK}`;
+  text += `\n_Shared via Infusee_\n`;
+  text += `Infusee app: ${APP_STORE_LINK}`;
   return text;
 }
 

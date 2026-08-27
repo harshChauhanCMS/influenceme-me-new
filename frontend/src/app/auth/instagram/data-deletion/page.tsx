@@ -23,13 +23,13 @@ export default function InstagramDataDeletionPage() {
                     Instagram Data Deletion
                 </Typography>
                 <Typography variant="body1" color="text.secondary">
-                    Learn how to delete your Instagram data from InfluenceMe
+                    Learn how to delete your Instagram data from Infusee
                 </Typography>
             </Box>
 
             {/* Important Notice */}
             <Alert severity="info" icon={<InfoIcon />} sx={{ mb: 4 }}>
-                This page provides instructions for deleting Instagram data that InfluenceMe has 
+                This page provides instructions for deleting Instagram data that Infusee has 
                 collected through the Instagram Business API.
             </Alert>
 
@@ -40,7 +40,7 @@ export default function InstagramDataDeletionPage() {
                         What Instagram Data We Collect
                     </Typography>
                     <Typography variant="body2" paragraph color="text.secondary">
-                        When you connect your Instagram Business account to InfluenceMe, we collect:
+                        When you connect your Instagram Business account to Infusee, we collect:
                     </Typography>
                     <Box component="ul" sx={{ pl: 2 }}>
                         <Typography component="li" variant="body2" color="text.secondary">
@@ -74,7 +74,7 @@ export default function InstagramDataDeletionPage() {
                     </Typography>
                     <Box component="ol" sx={{ pl: 2 }}>
                         <Typography component="li" variant="body2" color="text.secondary" paragraph>
-                            Log in to your InfluenceMe account (mobile app or web)
+                            Log in to your Infusee account (mobile app or web)
                         </Typography>
                         <Typography component="li" variant="body2" color="text.secondary" paragraph>
                             Go to <strong>Settings</strong> → <strong>Social Media Connections</strong>
@@ -122,7 +122,7 @@ export default function InstagramDataDeletionPage() {
                             Go to <strong>Settings</strong> → <strong>Security</strong> → <strong>Apps and Websites</strong>
                         </Typography>
                         <Typography component="li" variant="body2" color="text.secondary" paragraph>
-                            Find <strong>InfluenceMe</strong> in the list
+                            Find <strong>Infusee</strong> in the list
                         </Typography>
                         <Typography component="li" variant="body2" color="text.secondary" paragraph>
                             Click <strong>"Remove"</strong>

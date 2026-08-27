@@ -16,7 +16,6 @@ import {
   Lock as LockIcon,
   Visibility,
   VisibilityOff,
-  AdminPanelSettings as AdminIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -68,17 +67,17 @@ const LoginPage: React.FC = () => {
           <Box sx={{ textAlign: 'center', mb: 4 }}>
             <Box
               sx={{
-                display: 'inline-flex',
+                display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                width: 80,
-                height: 80,
-                borderRadius: '50%',
-                background: 'linear-gradient(135deg, #636B2F 0%, #BAC095 100%)',
                 mb: 2,
               }}
             >
-              <AdminIcon sx={{ fontSize: 40, color: 'white' }} />
+              <img
+                src="/logonew.png"
+                alt="InfluenceMe Logo"
+                style={{ maxHeight: 64, maxWidth: '100%', objectFit: 'contain' }}
+              />
             </Box>
             <Typography variant="h4" component="h1" fontWeight="bold" color="primary" gutterBottom>
               Admin Login
@@ -172,7 +171,7 @@ const LoginPage: React.FC = () => {
 
           <Box sx={{ mt: 3, textAlign: 'center' }}>
             <Typography variant="caption" color="text.secondary">
-              InfluenceMe Admin Panel
+              Infusee Admin Panel
             </Typography>
           </Box>
         </Paper>

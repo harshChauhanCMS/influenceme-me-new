@@ -44,6 +44,7 @@ import { format } from 'date-fns';
 import { VendorProfileDialog } from '@/components/vendors/VendorProfileDialog';
 import paymentService, { PaymentData } from '@/services/paymentService';
 import razorpayService from '@/services/razorpayService';
+import payoutMilestoneService, { PayoutMilestone } from '@/services/payoutMilestoneService';
 
 export default function VendorDealDetailsPage() {
     const router = useRouter();
@@ -64,6 +65,11 @@ export default function VendorDealDetailsPage() {
     const [paymentData, setPaymentData] = useState<PaymentData | null>(null);
     const [paymentLoading, setPaymentLoading] = useState(false);
     const [processingPayment, setProcessingPayment] = useState(false);
+    const [milestones, setMilestones] = useState<PayoutMilestone[]>([]);
+    const [milestonesLoading, setMilestonesLoading] = useState(false);
+    const [requestDialogMilestone, setRequestDialogMilestone] = useState<PayoutMilestone | null>(null);
+    const [workNote, setWorkNote] = useState('');
+    const [requestSubmitting, setRequestSubmitting] = useState(false);
 
     const isVendor = user?.role === 'vendor';
 
@@ -94,11 +100,42 @@ export default function VendorDealDetailsPage() {
             setPaymentLoading(true);
             const result = await paymentService.getDealPaymentAndInvoice(dealId);
             setPaymentData(result.payment);
+            if (result.payment && result.payment.status === 'completed') {
+                await loadMilestones(result.payment.paymentId);
+            }
         } catch (err: any) {
             console.error('Error loading payment data:', err);
             // Don't show error if payment doesn't exist yet
         } finally {
             setPaymentLoading(false);
+        }
+    };
+
+    const loadMilestones = async (paymentId: string) => {
+        try {
+            setMilestonesLoading(true);
+            const result = await payoutMilestoneService.getMilestonesForPayment(paymentId);
+            setMilestones(result);
+        } catch (err: any) {
+            console.error('Error loading payout milestones:', err);
+        } finally {
+            setMilestonesLoading(false);
+        }
+    };
+
+    const handleRequestMilestoneRelease = async () => {
+        if (!requestDialogMilestone) return;
+        try {
+            setRequestSubmitting(true);
+            await payoutMilestoneService.requestMilestoneRelease(requestDialogMilestone._id, workNote);
+            setRequestDialogMilestone(null);
+            setWorkNote('');
+            if (paymentData) await loadMilestones(paymentData.paymentId);
+        } catch (err: any) {
+            console.error('Error requesting milestone release:', err);
+            setError(err.message || 'Failed to request milestone release');
+        } finally {
+            setRequestSubmitting(false);
         }
     };
 
@@ -127,7 +164,7 @@ export default function VendorDealDetailsPage() {
                 paymentResponse.razorpay.currency,
                 settings.razorpayKeyId,
                 {
-                    name: 'InfluenceMe',
+                    name: 'Infusee',
                     description: `Payment for Vendor Deal`,
                     prefill: {
                         name: user?.name || '',
@@ -183,6 +220,33 @@ export default function VendorDealDetailsPage() {
                 return 'error';
             case 'running':
                 return 'primary';
+            default:
+                return 'default';
+        }
+    };
+
+    const getStatusIcon = (status: string) => {
+        switch (status) {
+            case 'completed':
+                return <CheckIcon />;
+            case 'cancelled':
+            case 'failed':
+                return <CancelIcon />;
+            default:
+                return <ScheduleIcon />;
+        }
+    };
+
+    const getMilestoneStatusColor = (status: string): 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning' => {
+        switch (status) {
+            case 'paid':
+                return 'success';
+            case 'requested':
+                return 'warning';
+            case 'rejected':
+                return 'error';
+            case 'pending':
+                return 'info';
             default:
                 return 'default';
         }
@@ -628,6 +692,27 @@ export default function VendorDealDetailsPage() {
                                                 Download Invoice
                                             </Button>
                                         )}
+                                        {paymentData.status === 'completed' && (
+                                            <Box>
+                                                <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
+                                                    Vendor payout progress (30% / 30% / 40%, reviewed by the Infusee team)
+                                                </Typography>
+                                                {milestonesLoading ? (
+                                                    <CircularProgress size={18} />
+                                                ) : (
+                                                    <Stack spacing={1}>
+                                                        {milestones.map((m) => (
+                                                            <Stack key={m._id} direction="row" justifyContent="space-between" alignItems="center">
+                                                                <Typography variant="body2">
+                                                                    Milestone {m.milestoneNumber} ({m.percentage}%) — ₹{m.amount.toLocaleString('en-IN')}
+                                                                </Typography>
+                                                                <Chip label={m.status} color={getMilestoneStatusColor(m.status)} size="small" />
+                                                            </Stack>
+                                                        ))}
+                                                    </Stack>
+                                                )}
+                                            </Box>
+                                        )}
                                     </Stack>
                                 ) : (
                                     <Stack spacing={2}>
@@ -649,6 +734,57 @@ export default function VendorDealDetailsPage() {
                                         >
                                             {processingPayment ? 'Processing...' : 'Make Payment'}
                                         </Button>
+                                    </Stack>
+                                )}
+                            </CardContent>
+                        </Card>
+                    )}
+
+                    {/* Payout Milestones (vendor's own view) */}
+                    {isVendor && paymentData?.status === 'completed' && (
+                        <Card sx={{ mb: 3 }}>
+                            <CardContent>
+                                <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+                                    <MoneyIcon sx={{ fontSize: 32, color: '#8CC342' }} />
+                                    <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                                        Payout
+                                    </Typography>
+                                </Stack>
+                                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                                    Payment received from the brand. You're paid out in 3 milestones (30% / 30% / 40%) as work is delivered — request release once a portion is done and the Infusee team will review and process it.
+                                </Typography>
+                                {milestonesLoading ? (
+                                    <CircularProgress size={20} />
+                                ) : (
+                                    <Stack spacing={1.5}>
+                                        {milestones.map((m) => (
+                                            <Box key={m._id} sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+                                                <Stack direction="row" justifyContent="space-between" alignItems="center" flexWrap="wrap" gap={1}>
+                                                    <Box>
+                                                        <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                                                            Milestone {m.milestoneNumber} — {m.percentage}%
+                                                        </Typography>
+                                                        <Typography variant="caption" color="text.secondary">
+                                                            ₹{m.amount.toLocaleString('en-IN')}
+                                                            {m.adminNote && m.status === 'pending' ? ` · Admin note: ${m.adminNote}` : ''}
+                                                        </Typography>
+                                                    </Box>
+                                                    <Stack direction="row" spacing={1} alignItems="center">
+                                                        <Chip label={m.status} color={getMilestoneStatusColor(m.status)} size="small" />
+                                                        {m.status === 'pending' && (
+                                                            <Button
+                                                                size="small"
+                                                                variant="outlined"
+                                                                onClick={() => setRequestDialogMilestone(m)}
+                                                                sx={{ textTransform: 'none', borderColor: '#8CC342', color: '#8CC342' }}
+                                                            >
+                                                                Request Release
+                                                            </Button>
+                                                        )}
+                                                    </Stack>
+                                                </Stack>
+                                            </Box>
+                                        ))}
                                     </Stack>
                                 )}
                             </CardContent>
@@ -719,6 +855,50 @@ export default function VendorDealDetailsPage() {
                     }}
                 />
             )}
+
+            {/* Request Milestone Release Dialog */}
+            <Dialog
+                open={!!requestDialogMilestone}
+                onClose={() => !requestSubmitting && setRequestDialogMilestone(null)}
+                maxWidth="sm"
+                fullWidth
+            >
+                <DialogTitle sx={{ fontWeight: 'bold' }}>
+                    Request Milestone {requestDialogMilestone?.milestoneNumber} Release
+                </DialogTitle>
+                <DialogContent>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                        Describe the work completed for this milestone ({requestDialogMilestone?.percentage}% —
+                        ₹{requestDialogMilestone?.amount.toLocaleString('en-IN')}). The Infusee team will review and process the release.
+                    </Typography>
+                    <TextField
+                        fullWidth
+                        multiline
+                        minRows={3}
+                        placeholder="e.g. Delivered the first batch of edited videos"
+                        value={workNote}
+                        onChange={(e) => setWorkNote(e.target.value)}
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button
+                        onClick={() => setRequestDialogMilestone(null)}
+                        disabled={requestSubmitting}
+                        sx={{ textTransform: 'none' }}
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        variant="contained"
+                        onClick={handleRequestMilestoneRelease}
+                        disabled={requestSubmitting || !workNote.trim()}
+                        startIcon={requestSubmitting ? <CircularProgress size={16} /> : undefined}
+                        sx={{ textTransform: 'none', fontWeight: 'bold', bgcolor: '#8CC342', '&:hover': { bgcolor: '#699e31' } }}
+                    >
+                        {requestSubmitting ? 'Submitting…' : 'Submit Request'}
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 }

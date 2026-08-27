@@ -146,7 +146,7 @@ export default function AboutUs() {
             type: 'heading' as const,
             content: (
                 <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 leading-tight">
-                    <span className="text-brand-purple">Welcome to Influence-Me</span>
+                    <span className="text-brand-purple">Welcome to Infusee</span>
                     <span className="text-black font-normal block mt-2">
             — where influencers, brands, and vendors unite
           </span>
@@ -161,7 +161,7 @@ export default function AboutUs() {
         {
             id: 'para2',
             content:
-                'At Influence-Me, we believe in the power of purposeful collaboration. Our platform bridges the gap between influencers and brands, simplifying the process of discovering the right partners for impactful campaigns.',
+                'At Infusee, we believe in the power of purposeful collaboration. Our platform bridges the gap between influencers and brands, simplifying the process of discovering the right partners for impactful campaigns.',
         },
     ];
 

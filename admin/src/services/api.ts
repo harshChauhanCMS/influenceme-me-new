@@ -1,7 +1,7 @@
 import axios from "axios";
 
-const API_BASE_URL = "https://api.influence-me.in";
-// const API_BASE_URL = "http://localhost:5005";
+// const API_BASE_URL = "https://api.influence-me.in";
+const API_BASE_URL = "http://localhost:5005";
 // const API_BASE_URL = "https://api.influence-me.in";
 
 export const getApiBaseUrl = () => API_BASE_URL;

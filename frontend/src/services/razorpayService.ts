@@ -160,7 +160,7 @@ class RazorpayService {
             key: keyId,
             amount: amount * 100, // Convert to paise
             currency,
-            name: options.name || 'InfluenceMe',
+            name: options.name || 'Infusee',
             description: options.description || 'Payment',
             order_id: orderId,
             prefill: options.prefill || {},

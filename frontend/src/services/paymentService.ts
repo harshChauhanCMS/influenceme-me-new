@@ -83,8 +83,8 @@ class PaymentService {
         throw new Error('Deal not found');
       }
 
-      const influencerId = typeof deal.influencerId === 'string' ? deal.influencerId : deal.influencerId?._id || deal.influencerId;
-      const amount = deal.finalTerms?.agreedAmount || deal.agreedAmount || 0;
+      const influencerId = deal.influencerId;
+      const amount = deal.finalTerms?.agreedAmount || 0;
 
       if (!influencerId || !amount) {
         throw new Error('Deal information incomplete');
@@ -130,8 +130,8 @@ class PaymentService {
         throw new Error('Deal not found');
       }
 
-      const vendorId = typeof deal.vendorId === 'string' ? deal.vendorId : deal.vendorId?._id || deal.vendorId;
-      const amount = deal.finalTerms?.agreedAmount || deal.agreedAmount || 0;
+      const vendorId = deal.vendorId;
+      const amount = deal.finalTerms?.agreedAmount || 0;
 
       if (!vendorId || !amount) {
         throw new Error('Deal information incomplete');
@@ -205,7 +205,11 @@ class PaymentService {
       if (params.status) queryParams.append('status', params.status);
       if (params.paymentType) queryParams.append('paymentType', params.paymentType);
 
-      const response = await this.apiClient.get<{ status: boolean; data: PaymentListResponse; message: string }>(
+      const response = await this.apiClient.get<{
+        status: boolean;
+        data: { payments: PaymentData[]; pagination: { total: number; page: number; limit: number; totalPages: number } };
+        message: string;
+      }>(
         `/api/payment/user?${queryParams.toString()}`,
         {
           headers: {
@@ -216,7 +220,8 @@ class PaymentService {
       if (!response.data.status) {
         throw new Error(response.data.message || 'Failed to get payments');
       }
-      return response.data.data;
+      const { payments, pagination } = response.data.data;
+      return { payments, ...pagination };
     } catch (error: any) {
       console.error('Failed to get user payments:', error);
       throw new Error(error.response?.data?.message || 'Failed to get payments');

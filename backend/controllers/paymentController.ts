@@ -7,6 +7,7 @@ import Invoice, { InvoiceStatus } from "../models/invoice";
 import User from "../models/user";
 import InfluencerBrandDeal from "../models/influencerBrandDeal";
 import VendorBrandDeal from "../models/vendorBrandDeal";
+import PayoutMilestone, { PayoutMilestoneStatus } from "../models/payoutMilestone";
 import {
     calculatePayment,
     getDefaultTaxConfig,
@@ -22,6 +23,70 @@ import {
     generateInvoicePDF,
     markInvoiceAsPaid,
 } from "../services/invoiceService";
+
+// Payment types that are settled against a VendorBrandDeal's finalTerms.paymentStatus,
+// and that get released to the payee via the 30/30/40 milestone flow.
+// (InfluencerBrandDeal has no paymentStatus field — the influencer flow relies on the
+// Payment record's own status instead, so nothing to update there.)
+const VENDOR_DEAL_PAYMENT_TYPES = [PaymentType.BRAND_TO_VENDOR, PaymentType.INFLUENCER_TO_VENDOR];
+const MILESTONE_ELIGIBLE_PAYMENT_TYPES = [PaymentType.BRAND_TO_INFLUENCER, PaymentType.BRAND_TO_VENDOR];
+
+/**
+ * Flip the related deal's finalTerms.paymentStatus to "paid" once a payment completes.
+ * Shared by every place that marks a payment COMPLETED (manual verify, auto-verify,
+ * webhook) so the call sites can't drift out of sync again.
+ */
+export async function markDealAsPaidIfApplicable(payment: any): Promise<void> {
+    if (payment.dealId && VENDOR_DEAL_PAYMENT_TYPES.includes(payment.paymentType)) {
+        const deal = await VendorBrandDeal.findById(payment.dealId);
+        if (deal && deal.finalTerms) {
+            deal.finalTerms.paymentStatus = "paid";
+            await deal.save();
+        }
+    }
+    await createMilestonesForPayment(payment);
+}
+
+/**
+ * Split a completed payment's payee-owed amount (base amount, tax/platform fee
+ * excluded — the same base the credit Transaction already uses) into 3 fixed
+ * payout milestones (30/30/40), released sequentially. Idempotent: safe to call
+ * more than once for the same payment.
+ */
+async function createMilestonesForPayment(payment: any): Promise<void> {
+    if (!payment.dealId || !MILESTONE_ELIGIBLE_PAYMENT_TYPES.includes(payment.paymentType)) {
+        return;
+    }
+
+    const alreadyExists = await PayoutMilestone.exists({ paymentId: payment.paymentId });
+    if (alreadyExists) return;
+
+    const round2 = (n: number) => Math.round(n * 100) / 100;
+    const milestone1Amount = round2(payment.amount * 0.3);
+    const milestone2Amount = round2(payment.amount * 0.3);
+    const milestone3Amount = round2(payment.amount - milestone1Amount - milestone2Amount);
+
+    const base = {
+        paymentId: payment.paymentId,
+        dealId: payment.dealId,
+        payerId: payment.payerId,
+        payeeId: payment.payeeId,
+        payeeType: payment.payeeType,
+        currency: payment.currency,
+    };
+
+    try {
+        await PayoutMilestone.create([
+            { ...base, milestoneNumber: 1, percentage: 30, amount: milestone1Amount, status: PayoutMilestoneStatus.PENDING },
+            { ...base, milestoneNumber: 2, percentage: 30, amount: milestone2Amount, status: PayoutMilestoneStatus.LOCKED },
+            { ...base, milestoneNumber: 3, percentage: 40, amount: milestone3Amount, status: PayoutMilestoneStatus.LOCKED },
+        ]);
+    } catch (error: any) {
+        // Unique index on (paymentId, milestoneNumber) — ignore duplicate-key races
+        // from a concurrent completion path, otherwise rethrow.
+        if (error?.code !== 11000) throw error;
+    }
+}
 
 // ---------------------------------------------------------
 // ✅ CREATE PAYMENT (Initiate Payment)
@@ -154,6 +219,21 @@ export const createPayment = async (req: AuthenticatedRequest, res: Response) =>
             return errorResponse(res, `Payment gateway error: ${gatewayError.message}`, 500);
         }
 
+        // Razorpay public key for the frontend Checkout widget. Fetched via the
+        // dedicated razorpayService (same account/credentials the gateway used
+        // above via PaymentGatewayFactory) rather than duplicating key lookup here.
+        let razorpayBlock: { orderId?: string; keyId: string; amount: number; currency: string } | undefined;
+        if (paymentMethod === PaymentMethod.RAZORPAY) {
+            const razorpayService = await import("../services/razorpayService");
+            const keyId = await razorpayService.default.getPublicKey();
+            razorpayBlock = {
+                orderId: payment.orderId,
+                keyId,
+                amount: payment.totalAmount,
+                currency: payment.currency,
+            };
+        }
+
         return successResponse(
             res,
             "Payment order created successfully",
@@ -166,6 +246,7 @@ export const createPayment = async (req: AuthenticatedRequest, res: Response) =>
                     status: payment.status,
                     redirectUrl: gatewayResponse.redirectUrl,
                 },
+                razorpay: razorpayBlock,
             },
             201
         );
@@ -219,15 +300,7 @@ export const verifyPayment = async (req: AuthenticatedRequest, res: Response) =>
         // Generate invoice PDF if invoice was created
         if (invoice) {
             await generateInvoicePDF(invoice.invoiceId);
-            
-            // Update deal payment status
-            if (payment.dealId && payment.paymentType === PaymentType.INFLUENCER_TO_VENDOR) {
-                const deal = await VendorBrandDeal.findById(payment.dealId);
-                if (deal && deal.finalTerms) {
-                    deal.finalTerms.paymentStatus = "paid";
-                    await deal.save();
-                }
-            }
+            await markDealAsPaidIfApplicable(payment);
         }
 
         return successResponse(res, "Payment verified successfully", {
@@ -682,22 +755,28 @@ export const getDealPaymentAndInvoice = async (req: AuthenticatedRequest, res: R
             return errorResponse(res, "Deal ID is required", 400);
         }
 
-        // Get deal
-        const deal = await VendorBrandDeal.findById(dealId);
+        // The dealId can belong to either deal model depending on which flow the
+        // frontend page came from (vendor deal vs. influencer deal) - try both.
+        const vendorDeal = await VendorBrandDeal.findById(dealId);
+        const influencerDeal = vendorDeal ? null : await InfluencerBrandDeal.findById(dealId);
+        const deal = vendorDeal || influencerDeal;
+
         if (!deal) {
             return errorResponse(res, "Deal not found", 404);
         }
 
         // Verify user has access to this deal
-        if (deal.brandId !== userId && deal.vendorId !== userId) {
+        const hasAccess = vendorDeal
+            ? (vendorDeal.brandId === userId || vendorDeal.vendorId === userId)
+            : (influencerDeal!.brandId === userId || influencerDeal!.influencerId === userId);
+        if (!hasAccess) {
             return errorResponse(res, "Unauthorized access to this deal", 403);
         }
 
-        // Get payment for this deal
-        let payment = await Payment.findOne({
-            dealId: dealId,
-            paymentType: PaymentType.INFLUENCER_TO_VENDOR,
-        });
+        // Get the most recent payment for this deal, regardless of which
+        // paymentType it was created under (brand_to_influencer, brand_to_vendor,
+        // or influencer_to_vendor all use the same dealId field).
+        let payment = await Payment.findOne({ dealId: dealId }).sort({ createdAt: -1 });
 
         // Auto-verify payment if it's pending and has orderId
         if (payment && payment.status === PaymentStatus.PENDING && payment.orderId && payment.paymentMethod === PaymentMethod.RAZORPAY) {
@@ -985,16 +1064,7 @@ async function autoVerifyPayment(payment: any): Promise<boolean> {
             
             if (invoice) {
                 await generateInvoicePDF(invoice.invoiceId);
-                
-                // Update deal payment status
-                if (payment.dealId && payment.paymentType === PaymentType.INFLUENCER_TO_VENDOR) {
-                    const deal = await VendorBrandDeal.findById(payment.dealId);
-                    if (deal && deal.finalTerms) {
-                        deal.finalTerms.paymentStatus = "paid";
-                        await deal.save();
-                        console.log("✅ Deal payment status updated to 'paid'");
-                    }
-                }
+                await markDealAsPaidIfApplicable(payment);
             }
 
             console.log("✅ Payment auto-verified successfully:", payment.paymentId);

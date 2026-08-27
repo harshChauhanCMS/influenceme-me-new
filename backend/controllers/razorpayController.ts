@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { successResponse, errorResponse } from '../utils/responseHelper';
 import { AuthenticatedRequest } from '../middleware/auth';
 import razorpayService from '../services/razorpayService';
+import { markDealAsPaidIfApplicable } from './paymentController';
 
 /**
  * @desc    Create Razorpay order
@@ -91,8 +92,6 @@ export const verifyRazorpayPayment = async (req: AuthenticatedRequest, res: Resp
       // Find payment in our database by orderId from Razorpay
       const Payment = (await import('../models/payment')).default;
       const PaymentStatus = (await import('../models/payment')).PaymentStatus;
-      const PaymentType = (await import('../models/payment')).PaymentType;
-      const VendorBrandDeal = (await import('../models/vendorBrandDeal')).default;
       const Transaction = (await import('../models/transaction')).default;
       const TransactionType = (await import('../models/transaction')).TransactionType;
       const { generateInvoiceForPayment } = await import('../services/invoiceService');
@@ -171,16 +170,7 @@ export const verifyRazorpayPayment = async (req: AuthenticatedRequest, res: Resp
       
       if (invoice) {
         await generateInvoicePDF(invoice.invoiceId);
-        
-        // Update deal payment status
-        if (payment.dealId && payment.paymentType === PaymentType.INFLUENCER_TO_VENDOR) {
-          const deal = await VendorBrandDeal.findById(payment.dealId);
-          if (deal && deal.finalTerms) {
-            deal.finalTerms.paymentStatus = 'paid';
-            await deal.save();
-            console.log('✅ Deal payment status updated to paid');
-          }
-        }
+        await markDealAsPaidIfApplicable(payment);
       }
 
       return successResponse(res, 'Payment verified successfully', {
@@ -215,8 +205,6 @@ export const verifyRazorpayPayment = async (req: AuthenticatedRequest, res: Resp
     // Find payment in our database by orderId
     const Payment = (await import('../models/payment')).default;
     const PaymentStatus = (await import('../models/payment')).PaymentStatus;
-    const PaymentType = (await import('../models/payment')).PaymentType;
-    const VendorBrandDeal = (await import('../models/vendorBrandDeal')).default;
     const Transaction = (await import('../models/transaction')).default;
     const TransactionType = (await import('../models/transaction')).TransactionType;
     const { generateInvoiceForPayment } = await import('../services/invoiceService');
@@ -305,18 +293,7 @@ export const verifyRazorpayPayment = async (req: AuthenticatedRequest, res: Resp
       
       if (invoice) {
         await generateInvoicePDF(invoice.invoiceId);
-        
-        // Update deal payment status
-        if (payment.dealId && payment.paymentType === PaymentType.INFLUENCER_TO_VENDOR) {
-          const deal = await VendorBrandDeal.findById(payment.dealId);
-          if (deal && deal.finalTerms) {
-            deal.finalTerms.paymentStatus = 'paid';
-            await deal.save();
-            console.log('✅ Deal payment status updated to paid for deal:', payment.dealId);
-          } else {
-            console.log('⚠️ Deal or finalTerms not found for dealId:', payment.dealId);
-          }
-        }
+        await markDealAsPaidIfApplicable(payment);
       }
 
       console.log('✅✅✅ Payment verified and updated successfully:', payment.paymentId);
@@ -387,8 +364,6 @@ export const verifyPaymentByPaymentId = async (req: AuthenticatedRequest, res: R
     // Find payment in our database by orderId from Razorpay
     const Payment = (await import('../models/payment')).default;
     const PaymentStatus = (await import('../models/payment')).PaymentStatus;
-    const PaymentType = (await import('../models/payment')).PaymentType;
-    const VendorBrandDeal = (await import('../models/vendorBrandDeal')).default;
     const Transaction = (await import('../models/transaction')).default;
     const TransactionType = (await import('../models/transaction')).TransactionType;
     const { generateInvoiceForPayment } = await import('../services/invoiceService');
@@ -401,7 +376,6 @@ export const verifyPaymentByPaymentId = async (req: AuthenticatedRequest, res: R
     if (!payment && dealId) {
       payment = await Payment.findOne({
         dealId: dealId,
-        paymentType: PaymentType.INFLUENCER_TO_VENDOR,
         status: PaymentStatus.PENDING,
       });
       if (payment) {
@@ -481,16 +455,7 @@ export const verifyPaymentByPaymentId = async (req: AuthenticatedRequest, res: R
     
     if (invoice) {
       await generateInvoicePDF(invoice.invoiceId);
-      
-      // Update deal payment status
-      if (payment.dealId && payment.paymentType === PaymentType.INFLUENCER_TO_VENDOR) {
-        const deal = await VendorBrandDeal.findById(payment.dealId);
-        if (deal && deal.finalTerms) {
-          deal.finalTerms.paymentStatus = 'paid';
-          await deal.save();
-          console.log('✅ Deal payment status updated to paid');
-        }
-      }
+      await markDealAsPaidIfApplicable(payment);
     }
 
     return successResponse(res, 'Payment verified successfully', {

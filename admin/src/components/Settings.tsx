@@ -57,7 +57,7 @@ const Settings: React.FC = () => {
 
   // General Settings
   const [generalSettings, setGeneralSettings] = useState({
-    siteName: 'InfluenceMe',
+    siteName: 'Infusee',
     siteUrl: 'https://influence-me.in',
     adminEmail: 'contact-us@influence-me.in',
     supportEmail: 'support@influence-me.in',
@@ -84,7 +84,7 @@ const Settings: React.FC = () => {
     smtpPassword: '',
     smtpSecure: true,
     fromEmail: 'noreply@influence-me.in',
-    fromName: 'InfluenceMe',
+    fromName: 'Infusee',
     emailNotifications: true,
   });
 

@@ -50,6 +50,7 @@ import LiveCommunication from "../components/LiveCommunication";
 import CampaignsManagement from "../components/CampaignsManagement";
 import Transactions from "../components/Transactions";
 import WithdrawalRequests from "../components/WithdrawalRequests";
+import PayoutMilestones from "../components/PayoutMilestones";
 import ShowcaseVideos from "../components/ShowcaseVideos";
 import VideoPurposes from "../components/VideoPurposes";
 import Analytics from "../components/Analytics";
@@ -99,6 +100,11 @@ const menuItems: MenuItem[] = [
         text: "Withdrawal Requests",
         icon: <RequestIcon />,
         path: "/dashboard/payments/withdrawals",
+      },
+      {
+        text: "Payout Milestones",
+        icon: <RequestIcon />,
+        path: "/dashboard/payments/milestones",
       },
     ],
   },
@@ -243,6 +249,10 @@ const Dashboard: React.FC = () => {
       return <WithdrawalRequests />;
     }
 
+    if (path.includes("/payments/milestones")) {
+      return <PayoutMilestones />;
+    }
+
     if (path.includes("/showcase-videos")) {
       return <ShowcaseVideos />;
     }
@@ -289,9 +299,30 @@ const Dashboard: React.FC = () => {
         sx={{
           background: "linear-gradient(135deg, #636B2F 0%, #BAC095 100%)",
           color: "white",
+          display: "flex",
+          alignItems: "center",
+          gap: 1.5,
+          py: 1,
         }}
       >
-        <AdminIcon sx={{ mr: 2 }} />
+        <Box
+          sx={{
+            bgcolor: "white",
+            borderRadius: 1.5,
+            px: 1,
+            py: 0.5,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+          }}
+        >
+          <img
+            src="/logonew.png"
+            alt="InfluenceMe Logo"
+            style={{ height: 32, width: "auto", objectFit: "contain" }}
+          />
+        </Box>
         <Typography variant="h6" noWrap component="div" fontWeight="bold">
           Admin Panel
         </Typography>

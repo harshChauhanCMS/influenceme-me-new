@@ -8,7 +8,7 @@ import { SocketProvider } from "@/context/socketContext";
 import { NotificationCountProvider } from "@/context/notificationCountContext";
 
 export const metadata: Metadata = {
-    title: "InfluenceMe New - Influencer Marketing Platform",
+    title: "Infusee - Influencer Marketing Platform",
     description: "Modern influencer marketing platform built with MERN stack and TypeScript",
 };
 

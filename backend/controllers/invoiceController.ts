@@ -141,15 +141,16 @@ export const downloadInvoicePDF = async (req: AuthenticatedRequest, res: Respons
         }
 
         // Generate PDF if not exists
-        if (!invoice.pdfUrl) {
-            const pdfUrl = await generateInvoicePDF(String(invoiceId));
+        let pdfUrl: string | null | undefined = invoice.pdfUrl;
+        if (!pdfUrl) {
+            pdfUrl = await generateInvoicePDF(String(invoiceId));
             if (!pdfUrl) {
                 return errorResponse(res, "Failed to generate PDF", 500);
             }
         }
 
         return successResponse(res, "Invoice PDF URL", {
-            pdfUrl: invoice.pdfUrl,
+            pdfUrl,
             invoiceId: invoice.invoiceId,
         });
     } catch (error: any) {

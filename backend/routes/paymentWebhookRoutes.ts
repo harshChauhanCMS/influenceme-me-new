@@ -1,22 +1,46 @@
 import express from "express";
+import crypto from "crypto";
 import Payment from "../models/payment";
 import { PaymentGatewayFactory } from "../services/paymentGatewayService";
 import { generateInvoiceForPayment } from "../services/invoiceService";
 import Transaction, { TransactionType } from "../models/transaction";
 import { PaymentStatus } from "../models/payment";
+import { markDealAsPaidIfApplicable } from "../controllers/paymentController";
 
 const router = express.Router();
+
+function verifyRazorpayWebhookSignature(req: express.Request): boolean {
+    const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
+    const signature = req.headers["x-razorpay-signature"] as string | undefined;
+    const rawBody = (req as any).rawBody as Buffer | undefined;
+
+    if (!secret) {
+        console.error("❌ RAZORPAY_WEBHOOK_SECRET is not configured; rejecting webhook");
+        return false;
+    }
+    if (!signature || !rawBody) {
+        return false;
+    }
+
+    const expectedSignature = crypto.createHmac("sha256", secret).update(rawBody).digest("hex");
+
+    try {
+        return crypto.timingSafeEqual(Buffer.from(expectedSignature), Buffer.from(signature));
+    } catch {
+        // Buffers of different length -> definitely not equal
+        return false;
+    }
+}
 
 // Razorpay webhook handler
 router.post("/razorpay", async (req, res) => {
     try {
-        const { event, payload } = req.body;
+        if (!verifyRazorpayWebhookSignature(req)) {
+            console.error("❌ Invalid Razorpay webhook signature");
+            return res.status(400).json({ error: "Invalid signature" });
+        }
 
-        // Verify webhook signature (implement signature verification)
-        // const signature = req.headers["x-razorpay-signature"];
-        // if (!verifyRazorpaySignature(payload, signature)) {
-        //     return res.status(400).json({ error: "Invalid signature" });
-        // }
+        const { event, payload } = req.body;
 
         if (event === "payment.captured") {
             console.log("🎉🎉🎉 RAZORPAY WEBHOOK: payment.captured event received!");
@@ -59,20 +83,9 @@ router.post("/razorpay", async (req, res) => {
             if (invoice) {
                 const { generateInvoicePDF } = await import("../services/invoiceService");
                 await generateInvoicePDF(invoice.invoiceId);
-                
-                // Update deal payment status
-                if (payment.dealId) {
-                    const PaymentType = (await import("../models/payment")).PaymentType;
-                    if (payment.paymentType === PaymentType.INFLUENCER_TO_VENDOR) {
-                        const VendorBrandDeal = (await import("../models/vendorBrandDeal")).default;
-                        const deal = await VendorBrandDeal.findById(payment.dealId);
-                        if (deal && deal.finalTerms) {
-                            deal.finalTerms.paymentStatus = "paid";
-                            await deal.save();
-                            console.log("✅ Deal payment status updated to 'paid' via webhook");
-                        }
-                    }
-                }
+
+                // Update deal payment status (applies to brand_to_vendor and influencer_to_vendor)
+                await markDealAsPaidIfApplicable(payment);
             }
         }
 

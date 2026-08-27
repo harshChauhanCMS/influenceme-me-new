@@ -176,32 +176,24 @@ export default function PaymentsPage() {
             setProcessingPayment(payment.paymentId);
             setError(null);
 
+            // Reuse the Razorpay order created when this payment record was first
+            // created - creating a fresh order here would leave it disconnected
+            // from the Payment doc (verify looks the payment up by orderId).
+            if (!payment.orderId) {
+                throw new Error('This payment has no associated order. Please contact support.');
+            }
+
             // Get payment settings
             const settings = await razorpayService.getPaymentSettings();
 
-            // Create Razorpay order
-            const orderResponse = await razorpayService.createOrder(
-                payment.totalAmount,
-                payment.currency,
-                payment.paymentId,
-                {
-                    paymentId: payment.paymentId,
-                    dealId: payment.dealId,
-                }
-            );
-
-            if (!orderResponse.data?.orderId) {
-                throw new Error('Failed to create payment order');
-            }
-
             // Initialize Razorpay checkout
             await razorpayService.initializeCheckout(
-                orderResponse.data.orderId,
+                payment.orderId,
                 payment.totalAmount,
                 payment.currency,
                 settings.razorpayKeyId,
                 {
-                    name: 'InfluenceMe',
+                    name: 'Infusee',
                     description: `Payment for ${payment.paymentType === 'brand_to_influencer' ? 'Influencer' : 'Vendor'} Deal`,
                     prefill: {
                         name: user?.name || '',

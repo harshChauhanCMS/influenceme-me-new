@@ -203,7 +203,7 @@ const SupportPage: React.FC = () => {
                             className="block p-4 bg-white bg-opacity-10 rounded-lg hover:bg-opacity-20 transition-colors"
                         >
                             <h3 className="font-semibold mb-2">About Us</h3>
-                            <p className="text-sm text-white text-opacity-90">Learn more about InfluenceMe</p>
+                            <p className="text-sm text-white text-opacity-90">Learn more about Infusee</p>
                         </Link>
                     </div>
                 </div>

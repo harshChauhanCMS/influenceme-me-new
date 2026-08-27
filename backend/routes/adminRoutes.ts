@@ -12,6 +12,11 @@ import {
   updateWaitingListStatus,
   getInfluencerInstagramAnalytics,
 } from '../controllers/adminController';
+import {
+  getPendingMilestoneRequests,
+  approveMilestone,
+  rejectMilestone,
+} from '../controllers/payoutMilestoneController';
 import { authenticate } from '../middleware/auth';
 import { authorize } from '../middleware/auth';
 
@@ -41,6 +46,11 @@ router.get('/analytics', getAnalytics);
 // Waiting List
 router.get('/waiting-list', getWaitingList);
 router.put('/waiting-list/:id', updateWaitingListStatus);
+
+// Payout milestones (30/30/40 release approval)
+router.get('/payouts/milestones', getPendingMilestoneRequests);
+router.put('/payouts/milestones/:milestoneId/approve', approveMilestone);
+router.put('/payouts/milestones/:milestoneId/reject', rejectMilestone);
 
 export default router;
 

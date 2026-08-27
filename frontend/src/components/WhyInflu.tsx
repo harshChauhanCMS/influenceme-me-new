@@ -71,7 +71,7 @@ const FEATURE_DATA: Record<string, SectionData> = {
                 image: Img6,
                 title: "Clear Goals",
                 description:
-                    "No more guesswork—Influence-Me provides clear, detailed briefs with content formats, schedules, platform guidelines, and brand expectations.",
+                    "No more guesswork—Infusee provides clear, detailed briefs with content formats, schedules, platform guidelines, and brand expectations.",
             },
             {
                 image: Img7,
@@ -95,7 +95,7 @@ const FEATURE_DATA: Record<string, SectionData> = {
                 image: Img10,
                 title: "Brand Access",
                 description:
-                    "Get early access to campaigns and launch new products with top brands on Influence-Me.",
+                    "Get early access to campaigns and launch new products with top brands on Infusee.",
             },
         ],
         gradient: "from-indigo-500 to-purple-600",

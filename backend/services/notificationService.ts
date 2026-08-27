@@ -335,3 +335,20 @@ export async function notifyAllUsersWithFcmTokens(
     console.error("notificationService.notifyAllUsersWithFcmTokens: failed", err),
   );
 }
+
+/**
+ * Notify every admin user (in-app only — admins aren't in the FCM-eligible
+ * role list). Used for things admins need to action, e.g. a payout
+ * milestone release request.
+ */
+export async function notifyAdmins(
+  type: string,
+  title: string,
+  message: string,
+  data?: Record<string, any>,
+): Promise<void> {
+  const admins = await User.find({ role: "admin" }, { _id: 1 }).lean();
+  if (admins.length === 0) return;
+  const adminIds = admins.map((a: any) => a._id);
+  await createAndSendToMany(adminIds, type, title, message, data);
+}

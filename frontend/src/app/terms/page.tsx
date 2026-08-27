@@ -23,8 +23,8 @@ const TermsAndConditionsPage: FC = () => (
                         <h2 className="text-2xl font-bold text-indigo-700 pb-2 border-b border-gray-200 mb-6">For Influencers</h2>
                         <ol className="list-decimal pl-5 marker:font-semibold marker:text-indigo-500">
                             <li className="mb-4 pl-1">
-                                Influence-Me connects brands with influencers and content creators (collectively &#34;**Influencers**&#34;).
-                                Final selection for campaigns is at the sole discretion of the brand in collaboration with Influence-Me.
+                                Infusee connects brands with influencers and content creators (collectively &#34;**Influencers**&#34;).
+                                Final selection for campaigns is at the sole discretion of the brand in collaboration with Infusee.
                             </li>
 
                             <li className="mb-4 pl-1">Influencers must be **18+ years** to participate in any campaign.</li>
@@ -49,7 +49,7 @@ const TermsAndConditionsPage: FC = () => (
                             <li className="mb-4 pl-1">
                                 Payments require:
                                 <ul className="list-disc pl-5 mt-2 marker:text-indigo-500">
-                                    <li>Published content approved in writing by Influence-Me</li>
+                                    <li>Published content approved in writing by Infusee</li>
                                     <li>Performance analytics submitted within 7 days of going live</li>
                                 </ul>
                             </li>
@@ -84,7 +84,7 @@ const TermsAndConditionsPage: FC = () => (
 
                             <li className="mb-4 pl-1">
                                 **Mandatory Disclosure:** All content must clearly state:
-                                &#34;**Sponsored in collaboration with Influence-Me**&#34; or &#34;**Ad in collaboration with Influence-Me**&#34;.
+                                &#34;**Sponsored in collaboration with Infusee**&#34; or &#34;**Ad in collaboration with Infusee**&#34;.
                             </li>
 
                             <li className="mb-4 pl-1">
@@ -92,7 +92,7 @@ const TermsAndConditionsPage: FC = () => (
                             </li>
 
                             <li className="mb-4 pl-1">
-                                Influence-Me reserves right to modify terms without prior notice.
+                                Infusee reserves right to modify terms without prior notice.
                             </li>
 
                             <li className="mb-4 pl-1">
@@ -108,7 +108,7 @@ const TermsAndConditionsPage: FC = () => (
                         <h2 className="text-2xl font-bold text-indigo-700 pb-2 border-b border-gray-200 mb-6">For Brands</h2>
                         <ol className="list-decimal pl-5 marker:font-semibold marker:text-indigo-500">
                             <li className="mb-4 pl-1">
-                                Influence-Me facilitates brand-influencer collaborations across India. Campaign launch implies agreement to:
+                                Infusee facilitates brand-influencer collaborations across India. Campaign launch implies agreement to:
                             </li>
 
                             <li className="mb-4 pl-1">
@@ -120,15 +120,15 @@ const TermsAndConditionsPage: FC = () => (
                             </li>
 
                             <li className="mb-4 pl-1">
-                                Influence-Me disburses payments upon campaign completion.
+                                Infusee disburses payments upon campaign completion.
                             </li>
 
                             <li className="mb-4 pl-1">
-                                Influence-Me reserves right to compensate influencers if engagement is fulfilled during disputes.
+                                Infusee reserves right to compensate influencers if engagement is fulfilled during disputes.
                             </li>
 
                             <li className="mb-4 pl-1">
-                                No false/misleading information to influencers or Influence-Me.
+                                No false/misleading information to influencers or Infusee.
                             </li>
 
                             <li className="mb-4 pl-1">

@@ -192,7 +192,7 @@ const DashboardOverview: React.FC = () => {
             Overview
           </Typography>
           <Typography variant="body1" color="text.secondary">
-            Welcome back to the InfluenceMe admin portal.
+            Welcome back to the Infusee admin portal.
           </Typography>
         </Box>
       </Box>

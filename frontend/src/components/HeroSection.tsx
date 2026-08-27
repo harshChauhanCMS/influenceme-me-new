@@ -93,38 +93,54 @@ const HeroSection = () => {
 
   return (
     <div
-      className="relative py-25 overflow-hidden"
+      className="relative py-24 md:py-32 lg:py-40 overflow-hidden bg-cover bg-center bg-no-repeat min-h-[550px] md:min-h-[650px] lg:min-h-[720px] flex items-center"
       style={{
-        background: "radial-gradient(ellipse at top, #f0f4ff 0%, #fdf7fe 100%)",
+        backgroundImage: "url('/homebanner.png')",
       }}
     >
-      {/* Background elements - only render on client to avoid hydration mismatch */}
-      {isMounted && (
-        <div className="absolute inset-0 overflow-hidden">
-          {backgroundElements.map((el) => (
-            <motion.div
-              key={el.key}
-              className="absolute rounded-full opacity-5"
-              style={{
-                background: `radial-gradient(circle, ${el.color}, transparent)`,
-                width: el.size,
-                height: el.size,
-                ...el.position,
-              }}
-              animate={el.animation}
-              transition={el.transition}
-            />
-          ))}
-        </div>
-      )}
 
-      {/* Grid overlay */}
-      <div className="absolute inset-0 bg-grid-gray-300/[0.05] bg-[length:20px_20px]" />
+      {/* Floating Animated Icons in Background */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+        <motion.img
+          src="/icons/hashtag.png"
+          alt="Hashtag Icon"
+          className="absolute top-12 left-10 w-16 h-16 md:w-20 md:h-20 opacity-80"
+          animate={{ y: [0, -10, 0] }}
+          transition={{ duration: 2, repeat: Infinity, repeatType: "reverse" }}
+        />
+        <motion.img
+          src="/icons/music.png"
+          alt="Music Icon"
+          className="absolute top-16 right-16 w-16 h-16 md:w-20 md:h-20 opacity-80"
+          animate={{ y: [0, 10, 0] }}
+          transition={{ duration: 2.2, repeat: Infinity, repeatType: "reverse", delay: 0.2 }}
+        />
+        <motion.img
+          src="/icons/heart.png"
+          alt="Heart Icon"
+          className="absolute bottom-16 right-24 w-16 h-16 md:w-20 md:h-20 opacity-80"
+          animate={{ scale: [1, 1.15, 1] }}
+          transition={{ duration: 1.8, repeat: Infinity, repeatType: "reverse", delay: 0.4 }}
+        />
+        <motion.img
+          src="/icons/camera.png"
+          alt="Camera Icon"
+          className="absolute top-1/2 right-10 w-16 h-16 md:w-20 md:h-20 opacity-80"
+          animate={{ rotate: [0, 10, -10, 0] }}
+          transition={{ duration: 3, repeat: Infinity, repeatType: "reverse", delay: 0.6 }}
+        />
+        <motion.img
+          src="/icons/chat.png"
+          alt="Chat Icon"
+          className="absolute bottom-10 left-16 w-16 h-16 md:w-20 md:h-20 opacity-80"
+          animate={{ y: [0, -8, 0] }}
+          transition={{ duration: 2.5, repeat: Infinity, repeatType: "reverse", delay: 0.8 }}
+        />
+      </div>
 
-      {/* Main content container */}
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 flex flex-col lg:flex-row items-center">
-        {/* Text content */}
-        <div className="lg:w-1/2 text-center lg:text-left z-10">
+      {/* Main content container (Text upon background image) */}
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <div className="max-w-2xl text-center lg:text-left">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -137,13 +153,13 @@ const HeroSection = () => {
               transition={{ duration: 0.5, delay: 0.2 }}
             >
               <span className="block text-gray-900">Amplify Your</span>
-              <span className="block bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 mt-2">
+              <span className="block bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 mt-2">
                 Digital Presence
               </span>
             </motion.h1>
 
             <motion.p
-              className="text-lg sm:text-xl text-gray-600 max-w-xl mx-auto lg:mx-0 mb-10"
+              className="text-lg sm:text-xl text-gray-800 max-w-xl mx-auto lg:mx-0 mb-10 font-medium leading-relaxed"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.4 }}
@@ -181,115 +197,12 @@ const HeroSection = () => {
               <Link
                 href="#journey"
                 scroll={true}
-                className="px-8 py-4 bg-white border-2 border-gray-200 rounded-full text-gray-800 font-bold text-lg hover:bg-gray-50 transition-all shadow-sm"
+                className="px-8 py-4 bg-white/90 backdrop-blur-sm border-2 border-gray-300 rounded-full text-gray-800 font-bold text-lg hover:bg-white transition-all shadow-md text-center"
               >
                 Learn More
               </Link>
             </motion.div>
           </motion.div>
-        </div>
-        {/* Right-side image with icon placeholders */}
-        <div className="lg:w-1/2 flex justify-center items-center relative mt-10 lg:mt-0">
-          <div className="relative">
-            {/* Influencer image */}
-            <img
-              src="/hero_img.webp"
-              alt="Influencer Decorative"
-              className="w-[480px] h-[480px] object-cover rounded-br-[200px] rounded-3xl"
-              aria-hidden="true"
-            />
-            {/* Icon placeholders */}
-            {/* Hashtag icon */}
-            <motion.img
-              src="/icons/hashtag.png"
-              alt="Hashtag Icon"
-              className="absolute -top-10 -left-8 w-[100px] h-[100px]"
-              animate={{ y: [0, -10, 0] }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-                repeatType: "reverse",
-              }}
-            />
-            {/* Music note icon */}
-            <motion.img
-              src="/icons/music.png"
-              alt="Music Note Icon"
-              className="absolute -top-10 right-0 w-[100px] h-[100px]"
-              animate={{ y: [0, 10, 0] }}
-              transition={{
-                duration: 2.2,
-                repeat: Infinity,
-                repeatType: "reverse",
-                delay: 0.2,
-              }}
-            />
-            {/* Heart icon */}
-            <motion.img
-              src="/icons/heart.png"
-              alt="Heart Icon"
-              className="absolute bottom-6 right-2 w-[100px] h-[100px]"
-              animate={{ scale: [1, 1.15, 1] }}
-              transition={{
-                duration: 1.8,
-                repeat: Infinity,
-                repeatType: "reverse",
-                delay: 0.4,
-              }}
-            />
-            {/* Camera icon */}
-            <motion.img
-              src="/icons/camera.png"
-              alt="Camera Icon"
-              className="absolute top-[100px] -right-10 w-20 h-20"
-              animate={{ rotate: [0, 10, -10, 0] }}
-              transition={{
-                duration: 3,
-                repeat: Infinity,
-                repeatType: "reverse",
-                delay: 0.6,
-              }}
-            />
-            {/* Chat bubble icon */}
-            <motion.img
-              src="/icons/chat.png"
-              alt="Chat Bubble Icon"
-              className="absolute -bottom-10 -left-10 w-[100px] h-[100px]"
-              animate={{ y: [0, -8, 0] }}
-              transition={{
-                duration: 2.5,
-                repeat: Infinity,
-                repeatType: "reverse",
-                delay: 0.8,
-              }}
-            />
-            {/* Blue circle */}
-            <motion.img
-              src="/icons/circle.png"
-              alt="Blue Circle Icon"
-              className="absolute -bottom-8 right-[240px] w-20 h-20"
-              animate={{ scale: [1, 1.1, 1] }}
-              transition={{
-                duration: 2.3,
-                repeat: Infinity,
-                repeatType: "reverse",
-                delay: 1,
-              }}
-            />
-            {/* Yellow dot */}
-            <motion.img
-              src="/icons/next.png"
-              alt="Yellow Dot Icon"
-              className="absolute top-[184px] -left-12 w-[100px] h-[100px]"
-              animate={{ y: [0, 8, 0] }}
-              transition={{
-                duration: 2.1,
-                repeat: Infinity,
-                repeatType: "reverse",
-                delay: 1.2,
-              }}
-            />
-          </div>
         </div>
       </div>
     </div>

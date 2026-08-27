@@ -23,6 +23,7 @@ import {
     ListItemIcon,
     ListItemText,
     Paper,
+    TextField,
 } from '@mui/material';
 import {
     ArrowBack as BackIcon,
@@ -52,6 +53,7 @@ import { format } from 'date-fns';
 import paymentService, { PaymentData } from '@/services/paymentService';
 import razorpayService from '@/services/razorpayService';
 import agreementService from '@/services/agreementService';
+import payoutMilestoneService, { PayoutMilestone } from '@/services/payoutMilestoneService';
 
 export default function InfluencerDealDetailsPage() {
     const router = useRouter();
@@ -69,6 +71,11 @@ export default function InfluencerDealDetailsPage() {
     const [processingPayment, setProcessingPayment] = useState(false);
     const [agreementLoading, setAgreementLoading] = useState(false);
     const [agreeLoading, setAgreeLoading] = useState(false);
+    const [milestones, setMilestones] = useState<PayoutMilestone[]>([]);
+    const [milestonesLoading, setMilestonesLoading] = useState(false);
+    const [requestDialogMilestone, setRequestDialogMilestone] = useState<PayoutMilestone | null>(null);
+    const [workNote, setWorkNote] = useState('');
+    const [requestSubmitting, setRequestSubmitting] = useState(false);
 
     useEffect(() => {
         if (dealId) {
@@ -97,11 +104,57 @@ export default function InfluencerDealDetailsPage() {
             setPaymentLoading(true);
             const result = await paymentService.getDealPaymentAndInvoice(dealId);
             setPaymentData(result.payment);
+            if (result.payment && (result.payment.status === 'completed' || result.payment.status === 'paid')) {
+                await loadMilestones(result.payment.paymentId);
+            }
         } catch (err: any) {
             console.error('Error loading payment data:', err);
             // Don't show error if payment doesn't exist yet
         } finally {
             setPaymentLoading(false);
+        }
+    };
+
+    const loadMilestones = async (paymentId: string) => {
+        try {
+            setMilestonesLoading(true);
+            const result = await payoutMilestoneService.getMilestonesForPayment(paymentId);
+            setMilestones(result);
+        } catch (err: any) {
+            console.error('Error loading payout milestones:', err);
+        } finally {
+            setMilestonesLoading(false);
+        }
+    };
+
+    const handleRequestMilestoneRelease = async () => {
+        if (!requestDialogMilestone) return;
+        try {
+            setRequestSubmitting(true);
+            await payoutMilestoneService.requestMilestoneRelease(requestDialogMilestone._id, workNote);
+            setRequestDialogMilestone(null);
+            setWorkNote('');
+            if (paymentData) await loadMilestones(paymentData.paymentId);
+        } catch (err: any) {
+            console.error('Error requesting milestone release:', err);
+            setError(err.message || 'Failed to request milestone release');
+        } finally {
+            setRequestSubmitting(false);
+        }
+    };
+
+    const getMilestoneStatusColor = (status: string): 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning' => {
+        switch (status) {
+            case 'paid':
+                return 'success';
+            case 'requested':
+                return 'warning';
+            case 'rejected':
+                return 'error';
+            case 'pending':
+                return 'info';
+            default:
+                return 'default';
         }
     };
 
@@ -146,7 +199,7 @@ export default function InfluencerDealDetailsPage() {
                 paymentResponse.razorpay.currency,
                 settings.razorpayKeyId,
                 {
-                    name: 'InfluenceMe',
+                    name: 'Infusee',
                     description: `Payment for Influencer Deal`,
                     prefill: {
                         name: user?.name || '',
@@ -640,6 +693,107 @@ export default function InfluencerDealDetailsPage() {
                         </CardContent>
                     </Card>
 
+                    {/* Payment */}
+                    {(deal.status === 'running' || deal.status === 'completion_requested' || deal.status === 'completed') && (
+                        <Card sx={{ mb: 3 }}>
+                            <CardContent>
+                                <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+                                    <MoneyIcon sx={{ fontSize: 28, color: '#8CC342' }} />
+                                    <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                                        Payment
+                                    </Typography>
+                                    {paymentData && (
+                                        <Chip
+                                            label={paymentData.status}
+                                            color={paymentData.status === 'completed' ? 'success' : paymentData.status === 'failed' ? 'error' : 'warning'}
+                                            size="small"
+                                        />
+                                    )}
+                                </Stack>
+
+                                {paymentLoading ? (
+                                    <CircularProgress size={24} />
+                                ) : !paymentData || paymentData.status === 'failed' ? (
+                                    <Box>
+                                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                                            {user?.role === 'brand'
+                                                ? `Pay ${deal.finalTerms?.agreedAmount ? `₹${deal.finalTerms.agreedAmount.toLocaleString('en-IN')}` : 'the agreed amount'} to start this deal's payout.`
+                                                : 'Waiting for the brand to make payment.'}
+                                        </Typography>
+                                        {user?.role === 'brand' && (
+                                            <Button
+                                                variant="contained"
+                                                startIcon={processingPayment ? <CircularProgress size={18} color="inherit" /> : <MoneyIcon />}
+                                                disabled={processingPayment}
+                                                onClick={handleMakePayment}
+                                                sx={{ textTransform: 'none', bgcolor: '#8CC342', '&:hover': { bgcolor: '#699e31' } }}
+                                            >
+                                                {processingPayment ? 'Processing…' : 'Make Payment'}
+                                            </Button>
+                                        )}
+                                    </Box>
+                                ) : paymentData.status !== 'completed' ? (
+                                    <Box>
+                                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                                            Payment is {paymentData.status}.
+                                        </Typography>
+                                        {user?.role === 'brand' && (
+                                            <Button
+                                                variant="contained"
+                                                startIcon={processingPayment ? <CircularProgress size={18} color="inherit" /> : <MoneyIcon />}
+                                                disabled={processingPayment}
+                                                onClick={handleMakePayment}
+                                                sx={{ textTransform: 'none', bgcolor: '#8CC342', '&:hover': { bgcolor: '#699e31' } }}
+                                            >
+                                                {processingPayment ? 'Processing…' : 'Complete Payment'}
+                                            </Button>
+                                        )}
+                                    </Box>
+                                ) : (
+                                    <Box>
+                                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                                            Payment received. The influencer is paid out in 3 milestones (30% / 30% / 40%) as work is delivered — each release is reviewed and processed by the Infusee team.
+                                        </Typography>
+                                        {milestonesLoading ? (
+                                            <CircularProgress size={20} />
+                                        ) : (
+                                            <Stack spacing={1.5}>
+                                                {milestones.map((m) => (
+                                                    <Paper key={m._id} variant="outlined" sx={{ p: 2 }}>
+                                                        <Stack direction="row" justifyContent="space-between" alignItems="center" flexWrap="wrap" gap={1}>
+                                                            <Box>
+                                                                <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                                                                    Milestone {m.milestoneNumber} — {m.percentage}%
+                                                                </Typography>
+                                                                <Typography variant="caption" color="text.secondary">
+                                                                    ₹{m.amount.toLocaleString('en-IN')}
+                                                                    {m.adminNote && m.status === 'pending' ? ` · Admin note: ${m.adminNote}` : ''}
+                                                                </Typography>
+                                                            </Box>
+                                                            <Stack direction="row" spacing={1} alignItems="center">
+                                                                <Chip label={m.status} color={getMilestoneStatusColor(m.status)} size="small" />
+                                                                {user?.role === 'influencer' && m.status === 'pending' && (
+                                                                    <Button
+                                                                        size="small"
+                                                                        variant="outlined"
+                                                                        onClick={() => setRequestDialogMilestone(m)}
+                                                                        sx={{ textTransform: 'none', borderColor: '#8CC342', color: '#8CC342' }}
+                                                                    >
+                                                                        Request Release
+                                                                    </Button>
+                                                                )}
+                                                            </Stack>
+                                                        </Stack>
+                                                    </Paper>
+                                                ))}
+                                            </Stack>
+                                        )}
+                                    </Box>
+                                )}
+                            </CardContent>
+                        </Card>
+                    )}
+
                     {/* Message */}
                     {deal.message && (
                         <Card sx={{ mb: 3 }}>
@@ -866,6 +1020,50 @@ export default function InfluencerDealDetailsPage() {
                         sx={{ textTransform: 'none', fontWeight: 'bold' }}
                     >
                         {actionLoading ? 'Approving...' : 'Approve'}
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* Request Milestone Release Dialog */}
+            <Dialog
+                open={!!requestDialogMilestone}
+                onClose={() => !requestSubmitting && setRequestDialogMilestone(null)}
+                maxWidth="sm"
+                fullWidth
+            >
+                <DialogTitle sx={{ fontWeight: 'bold' }}>
+                    Request Milestone {requestDialogMilestone?.milestoneNumber} Release
+                </DialogTitle>
+                <DialogContent>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                        Describe the work completed for this milestone ({requestDialogMilestone?.percentage}% —
+                        ₹{requestDialogMilestone?.amount.toLocaleString('en-IN')}). The Infusee team will review and process the release.
+                    </Typography>
+                    <TextField
+                        fullWidth
+                        multiline
+                        minRows={3}
+                        placeholder="e.g. Posted the sponsored reel and shared analytics screenshot in chat"
+                        value={workNote}
+                        onChange={(e) => setWorkNote(e.target.value)}
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button
+                        onClick={() => setRequestDialogMilestone(null)}
+                        disabled={requestSubmitting}
+                        sx={{ textTransform: 'none' }}
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        variant="contained"
+                        onClick={handleRequestMilestoneRelease}
+                        disabled={requestSubmitting || !workNote.trim()}
+                        startIcon={requestSubmitting ? <CircularProgress size={16} /> : undefined}
+                        sx={{ textTransform: 'none', fontWeight: 'bold', bgcolor: '#8CC342', '&:hover': { bgcolor: '#699e31' } }}
+                    >
+                        {requestSubmitting ? 'Submitting…' : 'Submit Request'}
                     </Button>
                 </DialogActions>
             </Dialog>
